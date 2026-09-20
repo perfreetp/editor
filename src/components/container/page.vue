@@ -87,6 +87,8 @@
     />
     <container-search-replace />
     <container-print />
+    <container-comments />
+    <dialog-version-history />
   </div>
 </template>
 

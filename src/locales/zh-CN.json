@@ -695,6 +695,40 @@
     "hide": "隐藏大纲",
     "empty": "暂无页面大纲"
   },
+  "comment": {
+    "title": "批注",
+    "add": "添加批注",
+    "show": "显示批注",
+    "hide": "隐藏批注",
+    "empty": "暂无批注，选中文字后可添加批注",
+    "placeholder": "请输入批注内容...",
+    "replyPlaceholder": "回复...",
+    "submit": "提交",
+    "resolve": "标记已解决",
+    "reopen": "重新打开",
+    "resolved": "已解决",
+    "delete": "删除",
+    "deleteConfirm": "删除后不可恢复，确定要删除该批注吗？",
+    "more": "还有 {count} 条回复"
+  },
+  "versionHistory": {
+    "text": "版本历史",
+    "title": "版本历史",
+    "save": "保存当前版本",
+    "savePlaceholder": "版本备注（可选）",
+    "saved": "版本保存成功",
+    "auto": "自动",
+    "manual": "手动",
+    "empty": "暂无历史版本",
+    "preview": "内容预览",
+    "diff": "差异对比",
+    "compareTip": "点击版本可预览内容，勾选两个版本可对比差异",
+    "restore": "恢复此版本",
+    "restoreConfirm": "恢复后将覆盖当前文档内容，当前内容会自动备份为一个新版本。确定要恢复到该版本吗？",
+    "restored": "已恢复到所选版本",
+    "backupLabel": "恢复前自动备份",
+    "delete": "删除"
+  },
   "spellcheck": {
     "enable": "开启拼写检查",
     "disable": "关闭拼写检查"

@@ -10,6 +10,7 @@
       <t-tree
         class="umo-toc-tree"
         :data="tocData"
+        :actived="activedIds"
         :keys="{
           label: 'textContent',
           value: 'id',
@@ -48,7 +49,6 @@ const buildTocTree = (tocArray) => {
       textContent: item.textContent,
       level: item.originalLevel,
       id: item.id,
-      actived: false, // item.isActive,
       children: [],
     }
     while (
@@ -72,7 +72,20 @@ const buildTocTree = (tocArray) => {
 
 const tocDebounceFn = useDebounceFn((toc) => {
   tocData = buildTocTree(toc)
-}, 1000)
+  syncActiveHeading()
+}, 300)
+
+// 滚动正文时，当前章节在大纲中自动高亮
+// 注意：扩展在滚动时直接修改 storage（不经过编辑器事务），
+// 无法通过 watch 感知，需要监听滚动容器主动同步
+const activeId = ref(null)
+const syncActiveHeading = () => {
+  const toc = editor.value?.storage?.tableOfContents?.content || []
+  const active = toc.find((item) => item.isActive)
+  activeId.value = active?.id || null
+}
+const activedIds = computed(() => (activeId.value ? [activeId.value] : []))
+const handlePageScroll = useDebounceFn(syncActiveHeading, 100)
 
 watch(
   () => editor.value?.storage.tableOfContents.content,
@@ -185,10 +198,17 @@ onMounted(() => {
   umoPageContainer.value = document.querySelector(
     `${container} .umo-main-container`,
   )
+  document
+    .querySelector(`${container} .umo-zoomable-container`)
+    ?.addEventListener('scroll', handlePageScroll, { passive: true })
+  syncActiveHeading()
 })
 
 onBeforeUnmount(() => {
   stopResize()
+  document
+    .querySelector(`${container} .umo-zoomable-container`)
+    ?.removeEventListener('scroll', handlePageScroll)
 })
 </script>
 

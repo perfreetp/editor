@@ -77,6 +77,10 @@ import {
 import { getOptions } from '@/utils/options'
 import { getSelectionNode, getSelectionText } from '@/utils/selection'
 import { shortId } from '@/utils/short-id'
+import {
+  getContentExcerpt as getVersionExcerpt,
+  saveVersion,
+} from '@/utils/version-history'
 import { getCurrentInstance } from 'vue'
 const { toBlob, toJpeg, toPng } = domToImage
 
@@ -137,6 +141,9 @@ const uploadFileMap = ref(new Map())
 // const bookmark = ref(false)
 const destroyed = ref(false)
 const typeWriterIsRunning = ref(false)
+const commentState = ref({ draft: null, activeId: null })
+const versionHistory = ref(false)
+const versionSnapshot = ref({ baseline: '' })
 
 const $toolbar = useState('toolbar', options)
 const $document = useState('document', options)
@@ -158,6 +165,9 @@ provide('uploadFileMap', uploadFileMap)
 provide('destroyed', destroyed)
 provide('historyRecords', historyRecords)
 provide('typeWriterIsRunning', typeWriterIsRunning)
+provide('commentState', commentState)
+provide('versionHistory', versionHistory)
+provide('versionSnapshot', versionSnapshot)
 
 watch(
   () => options.value.page,
@@ -183,6 +193,7 @@ watch(
       showBookmark,
       showLineNumber,
       showToc,
+      showComments: false,
       zoomLevel: 100,
       autoWidth: false,
       preview: {
@@ -308,6 +319,45 @@ watch(
     }, autoSave.interval)
   },
 )
+
+// 版本历史：编辑过程中按时间自动生成快照
+const VERSION_SNAPSHOT_INTERVAL = 3 * 60 * 1000
+let versionSnapshotInterval = null
+const takeAutoSnapshot = () => {
+  if (
+    options.value.document?.readOnly ||
+    !editor.value ||
+    editor.value.isEmpty
+  ) {
+    return
+  }
+  const html = editor.value.getHTML()
+  if (versionSnapshot.value.baseline === '') {
+    versionSnapshot.value.baseline = html
+    return
+  }
+  if (html === versionSnapshot.value.baseline) {
+    return
+  }
+  saveVersion(options.value.editorKey, {
+    id: shortId(10),
+    label: '',
+    auto: true,
+    createdAt: Date.now(),
+    html,
+    excerpt: getVersionExcerpt(html),
+  })
+  versionSnapshot.value.baseline = html
+}
+onMounted(() => {
+  versionSnapshotInterval = setInterval(
+    takeAutoSnapshot,
+    VERSION_SNAPSHOT_INTERVAL,
+  )
+})
+onBeforeUnmount(() => {
+  clearInterval(versionSnapshotInterval)
+})
 
 watch(
   () => editor.value,

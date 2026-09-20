@@ -235,6 +235,8 @@
         <template v-if="currentMenu === 'view'">
           <div class="umo-virtual-group">
             <menus-toolbar-view-toc v-if="!disableMenu('toc')" />
+            <menus-toolbar-view-comment v-if="!disableMenu('comment')" />
+            <menus-toolbar-view-history v-if="!disableMenu('versionHistory')" />
             <menus-toolbar-view-fullscreen v-if="!disableMenu('fullscreen')" />
             <menus-toolbar-view-preview v-if="!disableMenu('preview')" />
           </div>

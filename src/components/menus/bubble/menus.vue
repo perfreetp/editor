@@ -159,6 +159,7 @@
     <template v-if="!is('textBox')">
       <menus-toolbar-base-background-color />
       <menus-toolbar-base-highlight v-if="!disable('highlight')" />
+      <menus-toolbar-base-comment v-if="!disable('comment')" />
     </template>
     <template v-else>
       <menus-bubble-text-box-border />

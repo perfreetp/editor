@@ -696,6 +696,40 @@
     "hide": "Hide Document Map",
     "empty": "No Document Map Available"
   },
+  "comment": {
+    "title": "Comments",
+    "add": "Add Comment",
+    "show": "Show Comments",
+    "hide": "Hide Comments",
+    "empty": "No comments yet. Select text to add a comment.",
+    "placeholder": "Enter your comment...",
+    "replyPlaceholder": "Reply...",
+    "submit": "Submit",
+    "resolve": "Mark as Resolved",
+    "reopen": "Reopen",
+    "resolved": "Resolved",
+    "delete": "Delete",
+    "deleteConfirm": "This cannot be undone. Are you sure you want to delete this comment?",
+    "more": "{count} more replies"
+  },
+  "versionHistory": {
+    "text": "Version History",
+    "title": "Version History",
+    "save": "Save Current Version",
+    "savePlaceholder": "Version note (optional)",
+    "saved": "Version saved",
+    "auto": "Auto",
+    "manual": "Manual",
+    "empty": "No versions yet",
+    "preview": "Preview",
+    "diff": "Diff",
+    "compareTip": "Click a version to preview, or select two versions to compare",
+    "restore": "Restore",
+    "restoreConfirm": "Restoring will overwrite the current document. The current content will be backed up as a new version. Continue?",
+    "restored": "Restored to the selected version",
+    "backupLabel": "Backup before restore",
+    "delete": "Delete"
+  },
   "spellcheck": {
     "enable": "Enable Spell Check",
     "disable": "Disable Spell Check"
