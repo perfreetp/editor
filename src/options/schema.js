@@ -545,6 +545,23 @@ export default new ObjectSchema({
       },
     },
   },
+  versionHistory: {
+    merge: 'replace',
+    validate: 'object',
+    required: false,
+    schema: {
+      enabled: {
+        merge: 'replace',
+        validate: 'boolean',
+        required: false,
+      },
+      interval: {
+        merge: 'replace',
+        validate: 'number',
+        required: false,
+      },
+    },
+  },
   webPages: {
     merge: 'replace',
     validate(value) {

@@ -62,6 +62,30 @@
     font-size: var(--umo-font-size);
     font-display: swap;
 
+    .umo-comment-mark {
+      border-radius: 3px;
+      padding: 0 2px;
+      cursor: pointer;
+      background: color-mix(in srgb, var(--umo-primary-color) 18%, transparent);
+      box-shadow: inset 0 -1px 0 var(--umo-primary-color);
+      transition: background 0.15s ease;
+      &:hover,
+      &.is-active {
+        background: color-mix(in srgb, var(--umo-primary-color) 32%, transparent);
+      }
+      &[data-comment-resolved='true'] {
+        background: color-mix(in srgb, var(--umo-success-color, #2ba471) 14%, transparent);
+        box-shadow: inset 0 -1px 0 var(--umo-success-color, #2ba471);
+      }
+    }
+
+    @media print {
+      .umo-comment-mark {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+    }
+
     >h1[data-placeholder],
     h2[data-placeholder],
     h3[data-placeholder],

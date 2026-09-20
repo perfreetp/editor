@@ -694,7 +694,42 @@
     "title": "Document Map",
     "show": "Document Map",
     "hide": "Hide Document Map",
-    "empty": "No Document Map Available"
+    "empty": "No Document Map Available",
+    "untitled": "Untitled"
+  },
+  "comments": {
+    "title": "Comments",
+    "show": "Comments",
+    "hide": "Hide Comments",
+    "add": "Add Comment",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a reply...",
+    "newPlaceholder": "Write a comment...",
+    "empty": "No comments yet",
+    "items": "items",
+    "resolved": "Resolved",
+    "reopen": "Reopen",
+    "markResolved": "Resolve",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "selectTextFirst": "Select text before adding a comment",
+    "deleteConfirmTitle": "Delete comment",
+    "deleteConfirmMessage": "This removes the in-text marker and the complete comment thread."
+  },
+  "versions": {
+    "title": "Version History",
+    "show": "Version History",
+    "hide": "Hide Versions",
+    "save": "Save Version",
+    "restore": "Restore",
+    "diff": "Compare Versions",
+    "manual": "Manual",
+    "auto": "Auto Snapshot",
+    "empty": "No saved versions",
+    "emptyContent": "Empty document",
+    "selectHint": "Select two versions",
+    "restoreConfirmTitle": "Restore version",
+    "restoreConfirmMessage": "The selected version will be restored, and current content is saved as a pre-restore snapshot."
   },
   "spellcheck": {
     "enable": "Enable Spell Check",

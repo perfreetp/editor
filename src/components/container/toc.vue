@@ -7,20 +7,20 @@
       </div>
     </div>
     <div class="umo-toc-content umo-scrollbar">
-      <t-tree
-        class="umo-toc-tree"
-        :data="tocData"
-        :keys="{
-          label: 'textContent',
-          value: 'id',
-        }"
-        :empty="t('toc.empty')"
-        :transition="false"
-        activable
-        hover
-        expand-all
-        @active="headingActive"
-      />
+      <div v-if="tocData.length" class="umo-toc-list">
+        <button
+          v-for="item in tocData"
+          :key="item.id"
+          class="umo-toc-item"
+          :class="{ active: activeHeadingId === item.id }"
+          type="button"
+          :style="{ paddingInlineStart: 12 + (item.originalLevel - 1) * 16 }"
+          @click="headingActive(item.id)"
+        >
+          {{ item.textContent || t('toc.untitled') }}
+        </button>
+      </div>
+      <t-empty v-else :description="t('toc.empty')" size="small" />
     </div>
     <div class="umo-toc-resize-handle" @mousedown="startResize"></div>
   </div>
@@ -35,44 +35,14 @@ const page = inject('page')
 
 defineEmits(['close'])
 
-// 最终可视化数据
 let tocData = $ref([])
-const buildTocTree = (tocArray) => {
-  const root = []
-  const stack = []
-  if (!tocArray || tocArray.length === 0) {
-    return root
-  }
-  for (const item of tocArray) {
-    const node = {
-      textContent: item.textContent,
-      level: item.originalLevel,
-      id: item.id,
-      actived: false, // item.isActive,
-      children: [],
-    }
-    while (
-      stack.length > 0 &&
-      stack[stack.length - 1].level >= item.originalLevel
-    ) {
-      stack.pop()
-    }
-    if (stack.length === 0) {
-      root.push(node)
-    } else {
-      if (!stack[stack.length - 1].children) {
-        stack[stack.length - 1].children = []
-      }
-      stack[stack.length - 1].children.push(node)
-    }
-    stack.push(node)
-  }
-  return root
-}
+const activeHeadingId = ref(null)
+const scrollContainer = ref(null)
 
 const tocDebounceFn = useDebounceFn((toc) => {
-  tocData = buildTocTree(toc)
-}, 1000)
+  tocData = toc || []
+  updateActiveHeading()
+}, 120)
 
 watch(
   () => editor.value?.storage.tableOfContents.content,
@@ -82,32 +52,48 @@ watch(
   { immediate: true },
 )
 
-const headingActive = (value) => {
+const headingActive = (id) => {
   if (!editor.value) {
     return
   }
   const nodeElement = editor.value.view.dom.querySelector(
-    `[data-toc-id="${value[0]}"]`,
+    `[data-toc-id="${id}"]`,
   )
   const pageContainer = document.querySelector(
     `${container} .umo-zoomable-container`,
   )
-  const pageHeader = pageContainer?.querySelector('.umo-page-node-header')
-  if (!nodeElement || !pageContainer || !pageHeader) {
+  if (!nodeElement || !pageContainer) {
     return
   }
-  const { zoomLevel } = page.value
-  pageContainer.scrollTo({
-    top: Math.round(
-      ((nodeElement.offsetTop + pageHeader.offsetHeight) * zoomLevel) / 100,
-    ),
-  })
+  activeHeadingId.value = id
+  nodeElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
   const pos = editor.value.view.posAtDOM(nodeElement, 0)
   const { tr } = editor.value.view.state
   tr.setSelection(new TextSelection(tr.doc.resolve(pos)))
   editor.value.view.dispatch(tr)
   editor.value.view.focus()
 }
+
+const updateActiveHeading = useThrottleFn(() => {
+  if (!editor.value || tocData.length === 0) {
+    return
+  }
+  const editorRect = editor.value.view.dom.getBoundingClientRect()
+  const triggerOffset = Math.min(140, editorRect.height * 0.25)
+  let current = tocData[0]?.id
+  for (const item of tocData) {
+    const element = editor.value.view.dom.querySelector(
+      `[data-toc-id="${item.id}"]`,
+    )
+    if (!element) continue
+    if (element.getBoundingClientRect().top <= editorRect.top + triggerOffset) {
+      current = item.id
+    } else {
+      break
+    }
+  }
+  activeHeadingId.value = current
+}, 80)
 
 const baseTocWidth = 320
 const minTocWidth = baseTocWidth / 1.5
@@ -185,10 +171,18 @@ onMounted(() => {
   umoPageContainer.value = document.querySelector(
     `${container} .umo-main-container`,
   )
+  scrollContainer.value = document.querySelector(
+    `${container} .umo-zoomable-container`,
+  )
+  scrollContainer.value?.addEventListener('scroll', updateActiveHeading)
+  window.addEventListener('resize', updateActiveHeading)
+  updateActiveHeading()
 })
 
 onBeforeUnmount(() => {
   stopResize()
+  scrollContainer.value?.removeEventListener('scroll', updateActiveHeading)
+  window.removeEventListener('resize', updateActiveHeading)
 })
 </script>
 
@@ -280,6 +274,35 @@ onBeforeUnmount(() => {
       .umo-is-active {
         font-weight: 400;
         color: var(--umo-primary-color);
+      }
+    }
+    .umo-toc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .umo-toc-item {
+      border: 0;
+      width: 100%;
+      padding-block: 7px;
+      padding-inline-end: 8px;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--umo-text-color);
+      text-align: start;
+      font-size: 13px;
+      line-height: 1.35;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      &:hover {
+        background: var(--umo-button-hover-background);
+      }
+      &.active {
+        color: var(--umo-primary-color);
+        background: var(--umo-primary-color-light);
+        font-weight: 500;
       }
     }
   }

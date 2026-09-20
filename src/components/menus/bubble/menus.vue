@@ -116,6 +116,11 @@
     <menus-toolbar-base-bold />
     <menus-toolbar-base-italic />
     <div class="umo-bubble-menu-divider"></div>
+    <menus-bubble-add-comment v-if="editor?.isEditable !== false" />
+    <div
+      v-if="editor?.isEditable !== false"
+      class="umo-bubble-menu-divider"
+    ></div>
     <menus-toolbar-base-color />
     <menus-toolbar-base-background-color />
     <div class="umo-bubble-menu-divider"></div>

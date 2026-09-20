@@ -1,5 +1,5 @@
 <template>
-  <div class="umo-main-container">
+  <div ref="mainContainerRef" class="umo-main-container">
     <container-toc
       v-if="pageOptions.showToc"
       @close="pageOptions.showToc = false"
@@ -87,6 +87,9 @@
     />
     <container-search-replace />
     <container-print />
+    <container-comments-panel v-if="comments.panelVisible.value" />
+    <container-versions-panel v-if="versions.panelVisible.value" />
+    <container-comment-preview />
   </div>
 </template>
 
@@ -94,6 +97,58 @@
 const container = inject('container')
 const imageViewer = inject('imageViewer')
 const pageOptions = inject('page')
+const comments = inject('comments')
+const versions = inject('versions')
+const mainContainerRef = ref(null)
+
+const findCommentMark = (target) =>
+  target instanceof Element ? target.closest('[data-comment-id]') : null
+
+const handleCommentClick = (event) => {
+  const mark = findCommentMark(event.target)
+  if (!mark) return
+  event.preventDefault()
+  const threadId = mark.getAttribute('data-comment-id')
+  comments.openPanel(threadId)
+  comments.focusThread(threadId)
+}
+
+let hidePreviewTimer = 0
+const handleCommentMouseEnter = (event) => {
+  const mark = findCommentMark(event.target)
+  if (!mark) return
+  window.clearTimeout(hidePreviewTimer)
+  const threadId = mark.getAttribute('data-comment-id')
+  if (comments.preview.value.threadId !== threadId) {
+    comments.showPreview(threadId, event)
+  }
+}
+
+const handleCommentMouseOut = (event) => {
+  const mark = findCommentMark(event.target)
+  if (!mark) return
+  window.clearTimeout(hidePreviewTimer)
+  hidePreviewTimer = window.setTimeout(comments.hidePreview, 120)
+}
+
+onMounted(() => {
+  mainContainerRef.value?.addEventListener('click', handleCommentClick)
+  mainContainerRef.value?.addEventListener(
+    'mouseover',
+    handleCommentMouseEnter,
+  )
+  mainContainerRef.value?.addEventListener('mouseout', handleCommentMouseOut)
+})
+
+onBeforeUnmount(() => {
+  window.clearTimeout(hidePreviewTimer)
+  mainContainerRef.value?.removeEventListener('click', handleCommentClick)
+  mainContainerRef.value?.removeEventListener(
+    'mouseover',
+    handleCommentMouseEnter,
+  )
+  mainContainerRef.value?.removeEventListener('mouseout', handleCommentMouseOut)
+})
 
 // 页面大小
 const pageSize = $computed(() => {
@@ -384,5 +439,268 @@ watch(
   position: absolute;
   inset: 0;
   z-index: 1000;
+}
+
+.umo-comments-panel,
+.umo-versions-panel {
+  width: 340px;
+  max-width: 42vw;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  background: var(--umo-color-white);
+  border-inline-start: 1px solid var(--umo-border-color);
+}
+
+.umo-side-panel-title {
+  height: 48px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--umo-border-color-light);
+  .umo-side-panel-close {
+    margin-inline-start: auto;
+    border: 0;
+    padding: 4px;
+    background: transparent;
+    color: var(--umo-text-color);
+    cursor: pointer;
+    display: inline-flex;
+  }
+}
+
+.umo-comments-panel-body,
+.umo-versions-panel-body {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.umo-comment-compose {
+  padding: 10px;
+  border: 1px solid var(--umo-border-color-light);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: var(--umo-fill-light-color, rgba(0, 0, 0, 0.02));
+  blockquote {
+    margin: 0 0 8px;
+    padding: 6px 8px;
+    border-inline-start: 3px solid var(--umo-primary-color);
+    color: var(--umo-text-color-secondary);
+    font-size: 12px;
+  }
+}
+
+.umo-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.umo-comment-thread {
+  padding: 10px;
+  border: 1px solid var(--umo-border-color-light);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  &.active {
+    border-color: var(--umo-primary-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--umo-primary-color) 12%, transparent);
+  }
+  &.resolved {
+    opacity: 0.72;
+  }
+}
+
+.umo-comment-thread-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.umo-comment-quote {
+  border: 0;
+  padding: 0;
+  text-align: start;
+  background: transparent;
+  color: var(--umo-primary-color);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.umo-comment-resolved-badge {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--umo-success-color, #2ba471);
+}
+
+.umo-comment-item {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.umo-comment-content {
+  min-width: 0;
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+}
+
+.umo-comment-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--umo-text-color-light);
+}
+
+.umo-comment-thread-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.umo-comment-preview {
+  position: fixed;
+  z-index: 3000;
+  width: 280px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--umo-border-color);
+  background: var(--umo-color-white);
+  color: var(--umo-text-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  pointer-events: none;
+  blockquote {
+    margin: 0 0 6px;
+    padding: 0 0 0 8px;
+    border-inline-start: 3px solid var(--umo-primary-color);
+    color: var(--umo-text-color-secondary);
+    font-size: 12px;
+  }
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  footer {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--umo-text-color-light);
+  }
+}
+
+.umo-versions-toolbar {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--umo-border-color-light);
+  span {
+    font-size: 12px;
+    color: var(--umo-text-color-light);
+  }
+}
+
+.umo-version-card {
+  padding: 10px;
+  border: 1px solid var(--umo-border-color-light);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  &.selected {
+    border-color: var(--umo-primary-color);
+  }
+}
+
+.umo-version-main {
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.umo-version-info {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  text-align: start;
+  background: transparent;
+  color: var(--umo-text-color);
+  strong,
+  span,
+  p {
+    display: block;
+  }
+  strong {
+    font-size: 13px;
+  }
+  span {
+    margin: 2px 0;
+    font-size: 11px;
+    color: var(--umo-primary-color);
+  }
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--umo-text-color-light);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
+
+.umo-version-diff {
+  margin-top: 16px;
+  h4 {
+    margin: 0 0 8px;
+  }
+}
+
+.umo-version-diff-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.umo-diff-list {
+  max-height: 280px;
+  overflow: auto;
+  border: 1px solid var(--umo-border-color-light);
+  border-radius: 6px;
+  padding: 6px;
+  p {
+    margin: 0 0 4px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .is-removed {
+    background: color-mix(in srgb, var(--umo-error-color, #d54941) 12%, transparent);
+  }
+  .is-added {
+    background: color-mix(in srgb, var(--umo-success-color, #2ba471) 12%, transparent);
+  }
+  .is-empty {
+    opacity: 0;
+  }
 }
 </style>

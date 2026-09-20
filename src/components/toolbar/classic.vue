@@ -194,6 +194,10 @@
       </template>
       <template v-if="currentMenu === 'view'">
         <div class="umo-virtual-group">
+          <menus-toolbar-view-comment />
+          <menus-toolbar-view-version-history />
+        </div>
+        <div class="umo-virtual-group">
           <menus-toolbar-view-toc v-if="!disableMenu('toc')" />
           <menus-toolbar-view-fullscreen v-if="!disableMenu('fullscreen')" />
           <menus-toolbar-view-preview v-if="!disableMenu('preview')" />

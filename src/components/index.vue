@@ -65,6 +65,8 @@ import enConfig from 'tdesign-vue-next/esm/locale/en_US'
 import cnConfig from 'tdesign-vue-next/esm/locale/zh_CN'
 
 import { getTypewriterRunState } from '@/extensions/type-writer'
+import { useComments } from '@/composables/comments'
+import { useVersions } from '@/composables/versions'
 import { i18n } from '@/i18n'
 import { propsOptions } from '@/options'
 import { contentTransform } from '@/utils/content-transform'
@@ -137,6 +139,8 @@ const uploadFileMap = ref(new Map())
 // const bookmark = ref(false)
 const destroyed = ref(false)
 const typeWriterIsRunning = ref(false)
+const comments = useComments(editor, options)
+const versions = useVersions(editor, options)
 
 const $toolbar = useState('toolbar', options)
 const $document = useState('document', options)
@@ -158,6 +162,8 @@ provide('uploadFileMap', uploadFileMap)
 provide('destroyed', destroyed)
 provide('historyRecords', historyRecords)
 provide('typeWriterIsRunning', typeWriterIsRunning)
+provide('comments', comments)
+provide('versions', versions)
 
 watch(
   () => options.value.page,
@@ -317,6 +323,7 @@ watch(
     }
     editor.value.on('create', ({ editor }) => {
       destroyed.value = false
+      versions.initialize()
       emits('created', { editor })
     })
     editor.value.on('update', ({ editor }) => {

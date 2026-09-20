@@ -66,6 +66,10 @@ export default {
       interval: 300000,
     },
   },
+  versionHistory: {
+    enabled: true,
+    interval: 300000,
+  },
   echarts: {
     mode: 1,
     renderImage: false,

@@ -37,6 +37,7 @@ import BulletList from './bullet-list'
 import Callout from './callout'
 import CodeBlock from './code-block'
 import Columns from './columns'
+import Comment from './comment'
 import Datetime from './datetime'
 import Echarts from './echarts'
 import File from './file'
@@ -194,6 +195,7 @@ export const getDefaultExtensions = ({ container, options, uploadFileMap }) => {
     'date-time': Datetime,
     'option-box': OptionBox,
     bookmark: Bookmark,
+    comment: Comment,
     footnote: [Footnotes, FootnoteReference, Footnote],
     'hard-break': BreakMarks.configure({
       visible: page?.showBreakMarks,
